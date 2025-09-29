@@ -31,3 +31,10 @@ body {
     'wght' 400,
     'GRAD' 0;
 }
+
+.react-datepicker {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  box-shadow: none !important;
+  border-radius: 8px;
+}
