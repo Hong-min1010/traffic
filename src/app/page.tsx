@@ -22,12 +22,14 @@ import {
 } from "@tanstack/react-table";
 
 import { Chart } from 'react-chartjs-2'
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import { addMonths, format, subMonths } from 'date-fns';
 import "react-datepicker/dist/react-datepicker.css";
 import { ko } from 'date-fns/locale';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Space_Mono } from 'next/font/google';
+import instance from './axiosInstance';
 
 ChartJS.register(
   CategoryScale,
@@ -48,56 +50,6 @@ ChartJS.register(
 const labels = Array.from({ length:24 }, (_, i) => 
   // 숫자를 문자열로 변환, padStart(2, "0") -> 2자리 숫자로 만듦, 2자리가 아닌 수 ex) 1 = 01로 앞에 0을 붙여 2자리수로 만듦
   String(i + 1).padStart(2, "0"));
-
-const chartData = {
-      labels,
-      datasets: [
-          {
-              type: 'line' as const,
-              label: '1번',
-              borderColor: 'black',
-              borderWidth: 2,
-              fill: false,
-              // data: dummyData1,
-              data: [4, 1, 5, 8, 2, 10, 2, 3, 4, 5, 30, 40, 30, 20, 10, 15, 5, 20, 30, 45, 25, 40, 30, 20]
-          },
-        ],
-  }
-
-  const options: ChartOptions<"bar" | "line"> = {
-    responsive: true,
-      plugins: {
-          // 맨 위 데이터라벨
-          legend: {
-              position: 'bottom',
-          },
-          // 도넛차트 내부 데이터 표시
-          tooltip: {
-              callbacks: {
-                  title(tooltipItem: any) {
-                      return chartData.labels[tooltipItem[0].datasetIndex]
-                  },
-                  label(tooltipItem: any) {
-                      const dataset = chartData.datasets[tooltipItem.datasetIndex]
-                      const label = dataset.label || ''
-                      const value = tooltipItem.formattedValue
-                      return [`${label}: ${value}`]
-                  },
-              },
-          },
-      },
-      scales: {
-          x: {
-              // type:"category",
-              stacked: true,
-          },
-          y: {
-              type: "linear",
-              beginAtZero: true,
-              stacked: true,
-          },
-      }
-  }
 
   // 소통정보 표 타입 지정
   type TrafficInfo = {
@@ -146,8 +98,10 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isOpen, setIsOpen] = useState(false);
   const datePickerRef = useRef<HTMLDivElement>(null);
-  const [trafficData, setTrafficData] = useState<any>(null);
+  // const [trafficData, setTrafficData] = useState<any>(null);
   const [data, setData] = React.useState<TrafficInfo[]>([]);
+  const [openTab, setOpenTab] = useState<1 | 3 | 6>(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const table = useReactTable({
     data,
@@ -155,21 +109,7 @@ export default function Home() {
     getCoreRowModel: getCoreRowModel(),
   })
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/getTimeTrafInfo");
-        const data = await res.json();
-        setTrafficData(data);
-      } catch(e) {
-        console.log("API 요청 실패", e)
-      }
-    }
-    fetchData();
-  }, []);
-
-  console.log('trafficData >>>>', trafficData);
-
+  // 달력 옆 클릭 시 달력 닫기
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
@@ -183,25 +123,127 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const trafData: TrafficInfo[] = Array.from({ length: 24 }, (_, i) => ({
-      time: `${String(i).padStart(2, "0")}시`,
-      highway: Math.floor(Math.random() * 60) + 40,
-      urbanHighway: Math.floor(Math.random() * 40) + 30,
-      national: Math.floor(Math.random() * 40) + 30,
-      city: Math.floor(Math.random() * 20) + 15,
-  }));
-  setData(trafData);
-  }, [])
+    async function fetchData() {
+      try {
+        const y = selectedDate.getFullYear();
+        const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+        const d = String(selectedDate.getDate()).padStart(2, "0");
+        const dateStr = `${y}${m}${d}`;
+
+        const res = await instance.get("/getTimeTrafInfo", {params: { date: dateStr }});
+        const json = res.data;
+        if(json.data && Array.isArray(json.data.trafficList)) {
+          const apiData: TrafficInfo[] = json.data.trafficList.map((item: any) => ({
+            time: `${String(item.hour).padStart(2, "0")}시`,
+            highway: item.highway,
+            urbanHighway: item.urbanHighway,
+            national: item.national,
+            city: item.city
+          }));
+          setData(apiData);
+          return;
+        }
+      } catch (e) {
+        console.log("API 요청 실패", e)
+      }
+      const dummy: TrafficInfo[] = Array.from({ length: 24 }, (_, i) => ({
+        time: `${String(i).padStart(2, "0")}시`,
+        highway: Math.floor(Math.random() * 60) + 40,
+        urbanHighway: Math.floor(Math.random() * 40) + 30,
+        national: Math.floor(Math.random() * 40) + 30,
+        city: Math.floor(Math.random() * 20) + 15,
+      }));
+      setData(dummy);
+    }
+    fetchData();
+  },[selectedDate]);
+
+  const filteredData = useMemo(() => {
+    if(openTab === 1) {
+      return data;
+    }
+    const start = currentIndex * openTab;
+    const end = start + openTab;
+    return data.slice(start, end);
+  }, [data, openTab, currentIndex]);
+
+  const range = useMemo(() => {
+    if(openTab === 1) {
+      return "1시간 단위"
+    };
+    const startHour = filteredData[0]?.time;
+    const endHour = filteredData[filteredData.length - 1]?.time ?? '';
+    return `${startHour} ~ ${endHour}`
+  }, [openTab, currentIndex, filteredData]);
+
+  const chartData = useMemo(() => ({
+    labels: filteredData.map(d => d.time),
+    datasets: [
+      {
+        type: 'line' as const,
+        label: '고속도로',
+        borderColor: 'black',
+        fill: false,
+        data: filteredData.map(d => d.highway)
+      },
+      {
+        type: 'line' as const,
+        label: '도시고속',
+        borderColor: 'red',
+        fill: false,
+        data: filteredData.map(d => d.urbanHighway)
+      },
+      {
+        type: 'line' as const,
+        label: '국도',
+        borderColor: 'blue',
+        fill: false,
+        data: filteredData.map(d => d.national)
+      },
+      {
+        type: 'line' as const,
+        label: '시내',
+        borderColor: 'green',
+        fill: false,
+        data: filteredData.map(d => d.city)
+      }
+    ]
+  }), [filteredData]);
+
+  const options: ChartOptions<"bar" | "line"> = {
+    responsive: true,
+      plugins: {
+          // 맨 위 데이터라벨
+          legend: {
+              position: 'bottom',
+          },
+          // 도넛차트 내부 데이터 표시
+          tooltip: {
+              callbacks: {
+                  label(tooltipItem: any) {
+                    const dataset = chartData.datasets[tooltipItem.datasetIndex];
+                    const label = dataset.label || '';
+                    const value = tooltipItem.formattedValue;
+                    return [`${label}: ${value}`]
+                  },
+              },
+          },
+      },
+      scales: {
+          x: {
+              // type:"category",
+              stacked: true,
+          },
+          y: {
+              type: "linear",
+              beginAtZero: true,
+              stacked: true,
+          },
+      }
+  }
 
   return (
     <div className="font-sans items-center justify-items-center min-h-screen border-1 mx-8">
-      <header className='border-blue-100 w-full items-center justify-center'>
-        <div className='w-full flex justify-end border-blue-50 h-fit mb-3'>
-          <span className="material-symbols-outlined text-4xl cursor-pointer place-content-end">
-            menu
-          </span>
-        </div>
-      </header>
       <main className="flex flex-col gap-3 row-start-2 items-center border-1 w-full mb-7">
         <div className="font-mono text-3xl text-center border-1 border-amber-400 w-full">
           <span className='text-blue-500 font-bold text-[28px]'>이천시 교통 정보 모니터링</span>
@@ -263,6 +305,39 @@ export default function Home() {
           onClick={() => setSelectedDate(addMonths(selectedDate, 1))}
           className="material-symbols-outlined cursor-pointer text-[32px]">keyboard_arrow_right</span>
         </div>
+        {/* Tab 추가 (시간 단위 차트 렌더링) */}
+        <div className='flex justify-end w-full'>
+          <div className='flex bg-gray-100 rounded-lg overflow-hidden mr-5 shadow-md border-black border-2 divide-x divide-gray-500'>
+            {[1, 3, 6].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setOpenTab(tab as 1 | 3 | 6)}
+                className={`px-4 py-2 font-bold text-sm cursor-pointer
+                  ${openTab === tab
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-700"
+                  }`}>
+                    {tab}시간
+                  </button>
+            ))}
+          </div>
+        </div>
+        {/* 시간 좌 -> 우 넘기기 버튼 */}
+        {openTab !== 1 && (
+          <div className='flex justify-center items-center gap-3 mt-3'>
+          {currentIndex > 0 && (
+            <button
+            onClick={() => setCurrentIndex(i => Math.max(i - 1, 0))}
+            className='px-3 py-1 bg-gray-200 rounded cursor-pointer'>◀</button>
+          )}
+          <span className='font-bold'>{range}</span>
+          {currentIndex < Math.ceil(data.length / openTab) -1 && (
+            <button
+            onClick={() => setCurrentIndex(i => i + 1)}
+            className='px-3 py-1 bg-gray-200 rounded cursor-pointer'>▶</button>
+          )}
+        </div>
+        )}
         <Chart type='bar' data={chartData} options={options} />
         <div className='flex flex-row justify-end items-end w-full mr-10 font-bold'>
         <span className='text-green-600 mr-3'>원할</span>
@@ -283,23 +358,12 @@ export default function Home() {
                 </tr>
               ))}
             </thead>
-            {/* <tbody>
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id} className='even:bg-gray-50'>
-                  {row.getVisibleCells().map(cell => (
-                    <td key={cell.id} className='px-4 py-2 text-center'>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody> */}
             <tbody>
               {table.getRowModel().rows.map(row => (
                 <tr key={row.id} className="even:bg-gray-100">
                   {row.getVisibleCells().map(cell => {
                     const colKey = cell.column.id as keyof TrafficInfo;
-                    const value = row.original[colKey]; // 실제 데이터 값
+                    const value = row.original[colKey];
                     const isNumber = typeof value === "number";
                     return (
                       <td
