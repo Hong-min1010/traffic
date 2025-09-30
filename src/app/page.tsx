@@ -133,11 +133,8 @@ export default function Home() {
 
         const res = await instance.get("/getTimeTrafInfo", {params: { date: dateStr }});
         const json = res.data;
-        if(!json.data || !Array.isArray(json.data.trafficList)){
-          setData([]); 
-          return
-        };
-        if(json.data && Array.isArray(json.data.trafficList)) {
+
+        if(json && json.data && Array.isArray(json.data.trafficList)) {
           const apiData: TrafficInfo[] = json.data.trafficList.map((item: any) => ({
             time: `${String(item.hour).padStart(2, "0")}시`,
             highway: item.highway,
@@ -148,17 +145,18 @@ export default function Home() {
           setData(apiData);
           return;
         }
+        throw new Error("API response 에러")
       } catch (e) {
         console.log("API 요청 실패", e)
+        const dummy: TrafficInfo[] = Array.from({ length: 24 }, (_, i) => ({
+          time: `${String(i).padStart(2, "0")}시`,
+          highway: Math.floor(Math.random() * 60) + 40,
+          urbanHighway: Math.floor(Math.random() * 40) + 30,
+          national: Math.floor(Math.random() * 40) + 30,
+          city: Math.floor(Math.random() * 20) + 15,
+        }));
+        setData(dummy);
       }
-      const dummy: TrafficInfo[] = Array.from({ length: 24 }, (_, i) => ({
-        time: `${String(i).padStart(2, "0")}시`,
-        highway: Math.floor(Math.random() * 60) + 40,
-        urbanHighway: Math.floor(Math.random() * 40) + 30,
-        national: Math.floor(Math.random() * 40) + 30,
-        city: Math.floor(Math.random() * 20) + 15,
-      }));
-      setData(dummy);
     }
     fetchData();
   },[selectedDate]);
