@@ -2,7 +2,7 @@
 "use client";
 import Image from 'next/image';
 import type { ChartOptions, InteractionItem } from 'chart.js'
-import { ChartEvent } from 'chart.js';
+import { ChartEvent, LineController } from 'chart.js';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -37,6 +37,7 @@ ChartJS.register(
   BarElement,
   LineElement,
   PointElement,
+  LineController,
   Tooltip,
   Legend,
   Title,
