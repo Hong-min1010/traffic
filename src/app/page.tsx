@@ -34,16 +34,15 @@ import instance from './axiosInstance';
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  BarController,
   BarElement,
+  LineController,
   LineElement,
   PointElement,
-  LineController,
-  BarController,
-  LineController,
   Tooltip,
   Legend,
   Title,
-  ChartDataLabels
+  ChartDataLabels,
 );
 
 
