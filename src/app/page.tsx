@@ -7,7 +7,7 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement,
+  BarElement, 
   LineElement,
   PointElement,
   Tooltip,
@@ -53,7 +53,7 @@ const labels = Array.from({ length:24 }, (_, i) =>
 
   // 소통정보 표 타입 지정
   type TrafficInfo = {
-    time: String,
+    time: string,
     highway: number // 고속
     urbanHighway: number // 도시고속
     national: number // 국도
@@ -132,6 +132,10 @@ export default function Home() {
 
         const res = await instance.get("/getTimeTrafInfo", {params: { date: dateStr }});
         const json = res.data;
+        if(!json.data || !Array.isArray(json.data.trafficList)){
+          setData([]); 
+          return
+        };
         if(json.data && Array.isArray(json.data.trafficList)) {
           const apiData: TrafficInfo[] = json.data.trafficList.map((item: any) => ({
             time: `${String(item.hour).padStart(2, "0")}시`,
@@ -159,6 +163,9 @@ export default function Home() {
   },[selectedDate]);
 
   const filteredData = useMemo(() => {
+    if(!data){
+      return [];
+    }
     if(openTab === 1) {
       return data;
     }
