@@ -1,18 +1,9 @@
 // 브라우저 전용 API를 사용하기 위해 use client 선언 要
 "use client";
-import Image from 'next/image';
 import type { ChartOptions, InteractionItem } from 'chart.js'
-import { BarController, ChartEvent, LineController } from 'chart.js';
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement, 
-  LineElement,
-  PointElement,
-  Tooltip,
-  Legend,
-  Title,
+  registerables
 } from "chart.js";
 import {
   ColumnDef,
@@ -31,19 +22,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Space_Mono } from 'next/font/google';
 import instance from './axiosInstance';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarController,
-  BarElement,
-  LineController,
-  LineElement,
-  PointElement,
-  Tooltip,
-  Legend,
-  Title,
-  ChartDataLabels,
-);
+ChartJS.register(...registerables, ChartDataLabels);
 
 
 
