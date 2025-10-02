@@ -49,6 +49,29 @@ const labels = Array.from({ length:24 }, (_, i) =>
     { accessorKey: "city", header: "시내도로" },
   ];
 
+  function getSpeedLabel(type: keyof TrafficInfo, value: number) {
+    switch (type) {
+    case "highway":
+      if (value >= 80) return "원할";
+      if (value >= 60) return "서행";
+      return "정체";
+    case "urbanHighway":
+      if (value >= 60) return "원할";
+      if (value >= 40) return "서행";
+      return "정체";
+    case "national":
+      if (value >= 50) return "원할";
+      if (value >= 30) return "서행";
+      return "정체";
+    case "city":
+      if (value >= 30) return "원할";
+      if (value >= 20) return "서행";
+      return "정체";
+    default:
+      return "";
+  }
+  }
+
   function getSpeedClass(type: keyof TrafficInfo, value: number) {
   switch (type) {
     case "highway":
@@ -89,6 +112,7 @@ export default function Home() {
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
+
 
   // 달력 옆 클릭 시 달력 닫기
   useEffect(() => {
@@ -168,28 +192,28 @@ export default function Home() {
       {
         type: 'line' as const,
         label: '고속도로',
-        borderColor: 'black',
+        borderColor: '#000',
         fill: false,
         data: filteredData.map(d => d.highway)
       },
       {
         type: 'line' as const,
         label: '도시고속',
-        borderColor: 'red',
+        borderColor: '#FFDD00',
         fill: false,
         data: filteredData.map(d => d.urbanHighway)
       },
       {
         type: 'line' as const,
         label: '국도',
-        borderColor: 'blue',
+        borderColor: '#FF7B00',
         fill: false,
         data: filteredData.map(d => d.national)
       },
       {
         type: 'line' as const,
         label: '시내',
-        borderColor: 'green',
+        borderColor: '#0048FF',
         fill: false,
         data: filteredData.map(d => d.city)
       }
@@ -199,21 +223,24 @@ export default function Home() {
   const options: ChartOptions<"bar" | "line"> = {
     responsive: true,
       plugins: {
-          // 맨 위 데이터라벨
-          legend: {
-              position: 'bottom',
-          },
-          // 도넛차트 내부 데이터 표시
-          tooltip: {
-              callbacks: {
-                  label(tooltipItem: any) {
-                    const dataset = chartData.datasets[tooltipItem.datasetIndex];
-                    const label = dataset.label || '';
-                    const value = tooltipItem.formattedValue;
-                    return [`${label}: ${value}`]
-                  },
-              },
-          },
+        datalabels: {
+          display: false
+        },
+        // 맨 위 데이터라벨
+        legend: {
+            position: 'bottom',
+        },
+        // 도넛차트 내부 데이터 표시
+        tooltip: {
+            callbacks: {
+                label(tooltipItem: any) {
+                  const dataset = chartData.datasets[tooltipItem.datasetIndex];
+                  const label = dataset.label || '';
+                  const value = tooltipItem.formattedValue;
+                  return [`${label}: ${value}`]
+                },
+            },
+        },
       },
       scales: {
           x: {
@@ -223,19 +250,19 @@ export default function Home() {
           y: {
               type: "linear",
               beginAtZero: true,
-              stacked: true,
+              // stacked: true,
           },
       }
   }
 
   return (
     <div className="font-sans items-center justify-items-center min-h-screen border-1 mx-8">
-      <main className="flex flex-col gap-3 row-start-2 items-center border-1 w-full mb-7">
-        <div className="font-mono text-3xl text-center border-1 border-amber-400 w-full">
+      <main className="flex flex-col gap-3 row-start-2 items-center w-full m-7">
+        <div className="font-mono text-3xl text-center w-full">
           <span className='text-blue-500 font-bold text-[28px]'>이천시 교통 정보 모니터링</span>
         </div>
         {/* 토글 */}
-        <div className='flex w-full border-2 border-yellow-950 justify-center'>
+        <div className='flex w-full justify-center'>
           <div className='flex flex-row gap-2 items-center border-3 border-blue-300 bg-blue-200 w-fit justify-center p-2 rounded-2xl shadow-2xs'>
             {/* 1번 */}
             <button
@@ -260,7 +287,7 @@ export default function Home() {
           </div>
         </div>
         {/* 날짜(datePicker 사용) */}
-        <div className='gap-4 flex items-center'>
+        <div className='gap-4 flex items-center mt-2'>
           <span 
           onClick={() => setSelectedDate(subMonths(selectedDate, 1))}
           className="material-symbols-outlined cursor-pointer text-[32px]">keyboard_arrow_left</span>
@@ -293,7 +320,7 @@ export default function Home() {
         </div>
         {/* Tab 추가 (시간 단위 차트 렌더링) */}
         <div className='flex justify-end w-full'>
-          <div className='flex bg-gray-100 rounded-lg overflow-hidden mr-5 shadow-md border-black border-2 divide-x divide-gray-500'>
+          <div className='flex bg-gray-100 rounded-lg overflow-hidden mr-5 shadow-md border-black border-1 divide-x divide-gray-500'>
             {[1, 3, 6].map((tab) => (
               <button
                 key={tab}
@@ -325,22 +352,96 @@ export default function Home() {
         </div>
         )}
         <Chart type='bar' data={chartData} options={options} />
-        <div className='flex flex-row justify-end items-end w-full mr-10 font-bold'>
+        {/* <div className='flex flex-row justify-end items-end w-full mr-10 font-bold'>
         <span className='text-green-600 mr-3'>원할</span>
         <span className='text-yellow-600 mr-3'>서행</span>
         <span className='text-red-600'>정체</span>
-        </div>
+        </div> */}
         {/* 표 */}
         <div className='w-full max-h-60 overflow-y-scroll'>
           <table className='w-full border'>
             <thead className='bg-blue-300 text-white'>
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
-                    <th key={header.id} className='px-4 py-2 text-center border-1 border-gray-300'>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </th>
-                  ))}
+                  {headerGroup.headers.map(header => {
+                    // <th key={header.id} 
+                    // title={
+                    //   header.column.id === 'highway'
+                    //   ? "고속도로 기준\n원활: 80km 이상\n서행: 60~79km\n정체: 59km 이하"
+                    //   : header.column.id === "urbanHighway"
+                    //   ? "도시고속 기준\n원활: 60km 이상\n서행: 40~59km\n정체: 39km 이하"
+                    //   : header.column.id === "national"
+                    //   ? "국도 기준\n원활: 50km 이상\n서행: 30~49km\n정체: 29km 이하"
+                    //   : header.column.id === "city"
+                    //   ? "시내도로 기준\n원활: 30km 이상\n서행: 20~29km\n정체: 19km 이하"
+                    //   : "" 
+                    // }
+                    // className='px-4 py-2 text-center border-1 border-gray-300 hover:bg-blue-500'>
+                    //   {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    // </th>
+                    const colKey = header.column.id;
+                    if(colKey === "시간") {
+                      return (
+                        <th
+                        key={header.id}
+                        className='px-4 py-2 text-center border-1 border-gray-300 bg-gray-100'>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </th>
+                      )
+                    }
+
+                    const tipsMap: Record<string, { label: string; condition: string }[]> = {
+                      highway: [
+                        { label: "원활", condition: "80km 이상" },
+                        { label: "서행", condition: "60~79km" },
+                        { label: "정체", condition: "59km 이하" },
+                      ],
+                      urbanHighway: [
+                        { label: "원활", condition: "60km 이상" },
+                        { label: "서행", condition: "40~59km" },
+                        { label: "정체", condition: "39km 이하" },
+                      ],
+                      national: [
+                        { label: "원활", condition: "50km 이상" },
+                        { label: "서행", condition: "30~49km" },
+                        { label: "정체", condition: "29km 이하" },
+                      ],
+                      city: [
+                        { label: "원활", condition: "30km 이상" },
+                        { label: "서행", condition: "20~29km" },
+                        { label: "정체", condition: "19km 이하" },
+                      ],
+                    };
+                    return (
+                      <th
+                      key={header.id}
+                      className='relative group px-4 py-2 text-center border-1 border-gray-300 hover:bg-blue-300'>
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {tipsMap[colKey] && (
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 
+                                          hidden group-hover:block bg-gray-900 text-white 
+                                          rounded-lg shadow-xl z-50 p-2 w-44">
+                            <table className="text-xs w-full border-collapse">
+                              <thead>
+                                <tr className="bg-gray-700">
+                                  <th className="px-2 py-1 border border-gray-600">구분</th>
+                                  <th className="px-2 py-1 border border-gray-600">기준</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {tipsMap[colKey].map((t, idx) => (
+                                  <tr key={idx} className="hover:bg-gray-800">
+                                    <td className="px-2 py-1 border border-gray-600">{t.label}</td>
+                                    <td className="px-2 py-1 border border-gray-600">{t.condition}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </th>
+                    );
+                  })}
                 </tr>
               ))}
             </thead>
@@ -358,7 +459,7 @@ export default function Home() {
                           isNumber ? getSpeedClass(colKey, value) : ""
                         }`}
                       >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {isNumber ? getSpeedLabel(colKey, value) : value}
                       </td>
                     );
                   })}
