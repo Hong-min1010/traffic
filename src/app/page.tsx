@@ -415,7 +415,7 @@ export default function Home() {
                     return (
                       <th
                       key={header.id}
-                      className='relative group px-4 py-2 text-center border-1 border-gray-300 hover:bg-blue-300'>
+                      className='relative group px-4 py-2 text-center border-1 border-gray-300 hover:bg-blue-500'>
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {tipsMap[colKey] && (
                           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 
