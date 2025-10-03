@@ -104,8 +104,9 @@ export default function Home() {
   const datePickerRef = useRef<HTMLDivElement>(null);
   // const [trafficData, setTrafficData] = useState<any>(null);
   const [data, setData] = React.useState<TrafficInfo[]>([]);
-  const [openTab, setOpenTab] = useState<1 | 3 | 6>(1);
+  const [selectedTab, setselectedTab] = useState<1 | 3 | 6>(1);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showModal, setShowModal] = useState(false);
 
   const table = useReactTable({
     data,
@@ -169,22 +170,22 @@ export default function Home() {
     if(!data){
       return [];
     }
-    if(openTab === 1) {
+    if(selectedTab === 1) {
       return data;
     }
-    const start = currentIndex * openTab;
-    const end = start + openTab;
+    const start = currentIndex * selectedTab;
+    const end = start + selectedTab;
     return data.slice(start, end);
-  }, [data, openTab, currentIndex]);
+  }, [data, selectedTab, currentIndex]);
 
   const range = useMemo(() => {
-    if(openTab === 1) {
+    if(selectedTab === 1) {
       return "1시간 단위"
     };
     const startHour = filteredData[0]?.time;
     const endHour = filteredData[filteredData.length - 1]?.time ?? '';
     return `${startHour} ~ ${endHour}`
-  }, [openTab, currentIndex, filteredData]);
+  }, [selectedTab, currentIndex, filteredData]);
 
   const chartData = useMemo(() => ({
     labels: filteredData.map(d => d.time),
@@ -256,19 +257,19 @@ export default function Home() {
   }
 
   return (
-    <div className="font-sans items-center justify-items-center min-h-screen border-1 mx-8">
-      <main className="flex flex-col gap-3 row-start-2 items-center w-full m-7">
-        <div className="font-mono text-3xl text-center w-full">
-          <span className='text-blue-500 font-bold text-[28px]'>이천시 교통 정보 모니터링</span>
+    <div className="font-sans items-center justify-items-center min-h-screen border-1 mx-40 bg-white">
+      <main className="flex flex-col row-start-2 items-center w-full mt-2">
+        <div className="font-mono text-3xl text-center w-fit mb-2">
+          <span className='text-black font-bold text-[28px]'>이천시 교통 정보 모니터링</span>
         </div>
         {/* 토글 */}
         <div className='flex w-full justify-center'>
-          <div className='flex flex-row gap-2 items-center border-3 border-blue-300 bg-blue-200 w-fit justify-center p-2 rounded-2xl shadow-2xs'>
+          <div className='flex flex-row gap-2 items-center border-3 border-blue-300 bg-blue-200 w-fit justify-center p-1 rounded-2xl shadow-2xs'>
             {/* 1번 */}
             <button
             onClick={() => setActiveTab('traffic')} 
             className={
-              `px-4 py-2 rounded-xl text-[16px] font-bold transition cursor-pointer
+              `px-4 py-2 rounded-xl text-[14px] font-bold transition cursor-pointer
               ${activeTab === 'traffic'
                 ? "bg-blue-500 text-white shadow-md"
                 : " text-blue-950"
@@ -278,7 +279,7 @@ export default function Home() {
             <button
             onClick={() => setActiveTab('congestion')} 
             className={
-              `px-4 py-2 rounded-xl text-[16px] font-bold transition cursor-pointer
+              `px-4 py-2 rounded-xl text-[14px] font-bold transition cursor-pointer
               ${activeTab === 'congestion'
                 ? "bg-blue-500 text-white shadow-md"
                 : " text-blue-950"
@@ -318,156 +319,156 @@ export default function Home() {
           onClick={() => setSelectedDate(addMonths(selectedDate, 1))}
           className="material-symbols-outlined cursor-pointer text-[32px]">keyboard_arrow_right</span>
         </div>
-        {/* Tab 추가 (시간 단위 차트 렌더링) */}
-        <div className='flex justify-end w-full'>
-          <div className='flex bg-gray-100 rounded-lg overflow-hidden mr-5 shadow-md border-black border-1 divide-x divide-gray-500'>
-            {[1, 3, 6].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setOpenTab(tab as 1 | 3 | 6)}
-                className={`px-4 py-2 font-bold text-sm cursor-pointer
-                  ${openTab === tab
-                    ? "bg-blue-500 text-white"
-                    : "text-gray-700"
-                  }`}>
-                    {tab}시간
-                  </button>
-            ))}
-          </div>
+        {/* 통계표 + 시간 드롭다운 */}
+        <div className='flex flex-row w-full justify-end pr-6'>
+          {/* 통계표 */}
+          <button
+          onClick={() => setShowModal(true)}
+          className='px-4 py-2 bg-green-500 text-white rounded-lg font-bold shadow hover:bg-green-600 mr-6'>
+            통계표
+          </button>
+          <select
+          className='text-black font-bold w-fit border-2 border-gray-400 rounded-xl p-2 bg-blue-300'
+          value={selectedTab}
+          onChange={(e) => setselectedTab(Number(e.target.value) as 1 | 3 | 6)}>
+            <option value={1}>1시간</option>
+            <option value={2}>2시간</option>
+            <option value={3}>3시간</option>
+          </select>
         </div>
         {/* 시간 좌 -> 우 넘기기 버튼 */}
-        {openTab !== 1 && (
+        {selectedTab !== 1 && (
           <div className='flex justify-center items-center gap-3 mt-3'>
           {currentIndex > 0 && (
             <button
             onClick={() => setCurrentIndex(i => Math.max(i - 1, 0))}
-            className='px-3 py-1 bg-gray-200 rounded cursor-pointer'>◀</button>
+            className='px-3 py-1 bg-gray-600 rounded cursor-pointer text-white'>◀</button>
           )}
-          <span className='font-bold'>{range}</span>
-          {currentIndex < Math.ceil(data.length / openTab) -1 && (
+          <span className='font-bold text-black'>{range}</span>
+          {currentIndex < Math.ceil(data.length / selectedTab) -1 && (
             <button
             onClick={() => setCurrentIndex(i => i + 1)}
-            className='px-3 py-1 bg-gray-200 rounded cursor-pointer'>▶</button>
+            className='px-3 py-1 bg-gray-600 rounded cursor-pointer text-white'>▶</button>
           )}
         </div>
         )}
-        <Chart type='bar' data={chartData} options={options} />
-        {/* <div className='flex flex-row justify-end items-end w-full mr-10 font-bold'>
-        <span className='text-green-600 mr-3'>원할</span>
-        <span className='text-yellow-600 mr-3'>서행</span>
-        <span className='text-red-600'>정체</span>
-        </div> */}
-        {/* 표 */}
-        <div className='w-full max-h-60 overflow-y-scroll'>
-          <table className='w-full border'>
-            <thead className='bg-blue-300 text-white'>
-              {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map(header => {
-                    // <th key={header.id} 
-                    // title={
-                    //   header.column.id === 'highway'
-                    //   ? "고속도로 기준\n원활: 80km 이상\n서행: 60~79km\n정체: 59km 이하"
-                    //   : header.column.id === "urbanHighway"
-                    //   ? "도시고속 기준\n원활: 60km 이상\n서행: 40~59km\n정체: 39km 이하"
-                    //   : header.column.id === "national"
-                    //   ? "국도 기준\n원활: 50km 이상\n서행: 30~49km\n정체: 29km 이하"
-                    //   : header.column.id === "city"
-                    //   ? "시내도로 기준\n원활: 30km 이상\n서행: 20~29km\n정체: 19km 이하"
-                    //   : "" 
-                    // }
-                    // className='px-4 py-2 text-center border-1 border-gray-300 hover:bg-blue-500'>
-                    //   {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    // </th>
-                    const colKey = header.column.id;
-                    if(colKey === "시간") {
-                      return (
-                        <th
-                        key={header.id}
-                        className='px-4 py-2 text-center border-1 border-gray-300 bg-gray-100'>
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                      )
-                    }
+        <Chart type='bar' data={chartData} options={options} className='p-6'/>
+        {showModal && (
+          <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg h-full w-full overflow-y-auto relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-3 right-3 text-gray-600 hover:text-black font-bold"
+            >
+              ✕
+            </button>
+            {/* 표 */}
+            <div className='w-full h-full'>
+              <div className='w-full h-full overflow-y-scroll'>
+                <table className='w-full border'>
+                  <thead className='bg-blue-300 text-white'>
+                    {table.getHeaderGroups().map(headerGroup => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map(header => {
+                          const colKey = header.column.id;
+                          if(colKey === "시간") {
+                            return (
+                              <th
+                              key={header.id}
+                              className='px-4 py-2 text-center border-1 border-gray-300 bg-gray-100'>
+                                {flexRender(header.column.columnDef.header, header.getContext())}
+                              </th>
+                            )
+                          }
 
-                    const tipsMap: Record<string, { label: string; condition: string }[]> = {
-                      highway: [
-                        { label: "원활", condition: "80km 이상" },
-                        { label: "서행", condition: "60~79km" },
-                        { label: "정체", condition: "59km 이하" },
-                      ],
-                      urbanHighway: [
-                        { label: "원활", condition: "60km 이상" },
-                        { label: "서행", condition: "40~59km" },
-                        { label: "정체", condition: "39km 이하" },
-                      ],
-                      national: [
-                        { label: "원활", condition: "50km 이상" },
-                        { label: "서행", condition: "30~49km" },
-                        { label: "정체", condition: "29km 이하" },
-                      ],
-                      city: [
-                        { label: "원활", condition: "30km 이상" },
-                        { label: "서행", condition: "20~29km" },
-                        { label: "정체", condition: "19km 이하" },
-                      ],
-                    };
-                    return (
-                      <th
-                      key={header.id}
-                      className='relative group px-4 py-2 text-center border-1 border-gray-300 hover:bg-blue-500'>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {tipsMap[colKey] && (
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 
-                                          hidden group-hover:block bg-gray-900 text-white 
-                                          rounded-lg shadow-xl z-50 p-2 w-44">
-                            <table className="text-xs w-full border-collapse">
-                              <thead>
-                                <tr className="bg-gray-700">
-                                  <th className="px-2 py-1 border border-gray-600">구분</th>
-                                  <th className="px-2 py-1 border border-gray-600">기준</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {tipsMap[colKey].map((t, idx) => (
-                                  <tr key={idx} className="hover:bg-gray-800">
-                                    <td className="px-2 py-1 border border-gray-600">{t.label}</td>
-                                    <td className="px-2 py-1 border border-gray-600">{t.condition}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id} className="even:bg-gray-100">
-                  {row.getVisibleCells().map(cell => {
-                    const colKey = cell.column.id as keyof TrafficInfo;
-                    const value = row.original[colKey];
-                    const isNumber = typeof value === "number";
-                    return (
-                      <td
-                        key={cell.id}
-                        className={`px-4 py-2 text-center font-bold border-1 border-gray-300 ${
-                          isNumber ? getSpeedClass(colKey, value) : ""
-                        }`}
-                      >
-                        {isNumber ? getSpeedLabel(colKey, value) : value}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                          const tipsMap: Record<string, { label: string; condition: string }[]> = {
+                            highway: [
+                              { label: "원활", condition: "80km 이상" },
+                              { label: "서행", condition: "60~79km" },
+                              { label: "정체", condition: "59km 이하" },
+                            ],
+                            urbanHighway: [
+                              { label: "원활", condition: "60km 이상" },
+                              { label: "서행", condition: "40~59km" },
+                              { label: "정체", condition: "39km 이하" },
+                            ],
+                            national: [
+                              { label: "원활", condition: "50km 이상" },
+                              { label: "서행", condition: "30~49km" },
+                              { label: "정체", condition: "29km 이하" },
+                            ],
+                            city: [
+                              { label: "원활", condition: "30km 이상" },
+                              { label: "서행", condition: "20~29km" },
+                              { label: "정체", condition: "19km 이하" },
+                            ],
+                          };
+                          return (
+                            <th
+                            key={header.id}
+                            className='relative group px-4 py-2 text-center border-1 border-gray-300 hover:bg-blue-500'>
+                              {flexRender(header.column.columnDef.header, header.getContext())}
+                              {tipsMap[colKey] && (
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 
+                                                hidden group-hover:block bg-gray-900 text-white 
+                                                rounded-lg shadow-xl z-50 p-2 w-44">
+                                  <table className="text-xs w-full border-collapse">
+                                    <thead>
+                                      <tr className="bg-gray-700">
+                                        <th className="px-2 py-1 border border-gray-600">구분</th>
+                                        <th className="px-2 py-1 border border-gray-600">기준</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {tipsMap[colKey].map((t, idx) => (
+                                        <tr key={idx} className="hover:bg-gray-800">
+                                          <td className="px-2 py-1 border text-white border-gray-600">{t.label}</td>
+                                          <td className="px-2 py-1 border text-white border-gray-600">{t.condition}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </th>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody>
+                    {table.getRowModel().rows.map(row => (
+                      <tr key={row.id} className="font-bole text-black">
+                        {row.getVisibleCells().map(cell => {
+                          const colKey = cell.column.id as keyof TrafficInfo;
+                          const value = row.original[colKey];
+                          const isNumber = typeof value === "number";
+                          return (
+                            <td
+                              key={cell.id}
+                              className={`px-4 py-2 text-center font-bold border-1 border-gray-300 ${
+                                isNumber ? getSpeedClass(colKey, value) : ""
+                              }`}
+                            >
+                              {isNumber ? getSpeedLabel(colKey, value) : value}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div> 
+        )}
       </main>
     </div>
   );

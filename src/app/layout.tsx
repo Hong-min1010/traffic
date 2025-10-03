@@ -29,7 +29,7 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
       </head>
       <body
-        className="min-h-screen bg-gray-50 text-gray-900"
+        className="min-h-screen bg-white text-gray-900"
       >
         {children}
       </body>
