@@ -27,10 +27,6 @@ export default function RootLayout({
       <head>
         {/* GoogleFonts */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
-        <Script
-          strategy="beforeInteractive"
-          src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=fb0e2ba9c0067160c8753e12408fb8b7&autoload=false`}
-        />
       </head>
       <body
         className="min-h-screen bg-white text-gray-900"

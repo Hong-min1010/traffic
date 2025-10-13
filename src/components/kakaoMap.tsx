@@ -18,7 +18,6 @@ export default function KakaoMapModal({ onClose }: KakaoMapModalProps) {
     const scriptId = "kakao-map-sdk";
     const existingScript = document.getElementById(scriptId);
 
-    // 이미 로드된 경우
     if (existingScript) {
       if (window.kakao && window.kakao.maps) {
         initMap();
@@ -28,7 +27,6 @@ export default function KakaoMapModal({ onClose }: KakaoMapModalProps) {
       return;
     }
 
-    // 새 스크립트 추가
     const script = document.createElement("script");
     script.id = scriptId;
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&autoload=false`;
