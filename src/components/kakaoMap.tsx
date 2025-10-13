@@ -15,33 +15,48 @@ export default function KakaoMapModal({ onClose }: KakaoMapModalProps) {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // 카카오 스크립트가 로드된 후에 실행
-    if (!window.kakao || !mapRef.current) return;
+    const scriptId = "kakao-map-sdk";
+    const existingScript = document.getElementById(scriptId);
 
-    window.kakao.maps.load(() => {
-      const center = new window.kakao.maps.LatLng(37.2726, 127.4342);
+    // 이미 로드된 경우
+    if (existingScript) {
+      if (window.kakao && window.kakao.maps) {
+        initMap();
+      } else {
+        existingScript.addEventListener("load", initMap);
+      }
+      return;
+    }
 
-      const options = {
-        center,
-        level: 5,
-      };
+    // 새 스크립트 추가
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&autoload=false`;
+    script.async = true;
+    script.onload = initMap;
+    document.head.appendChild(script);
 
-      const map = new window.kakao.maps.Map(mapRef.current, options);
+    function initMap() {
+      if (!window.kakao || !mapRef.current) return;
 
-      // 마커 추가
-      new window.kakao.maps.Marker({
-        map,
-        position: center,
+      window.kakao.maps.load(() => {
+        const center = new window.kakao.maps.LatLng(37.2726, 127.4342);
+        const options = { center, level: 5 };
+        const map = new window.kakao.maps.Map(mapRef.current, options);
+
+        new window.kakao.maps.Marker({ map, position: center });
+
+        setTimeout(() => {
+          window.kakao.maps.event.trigger(map, "resize");
+          map.setCenter(center);
+        }, 200);
       });
+    }
 
-      // ✅ 모달 렌더 후 지도 리사이즈 및 센터 고정
-      setTimeout(() => {
-        window.kakao.maps.event.trigger(map, "resize");
-        map.setCenter(center);
-      }, 200);
-    });
+    return () => {
+      script.removeEventListener("load", initMap);
+    };
   }, []);
-
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
