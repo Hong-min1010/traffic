@@ -21,6 +21,7 @@ import { ko } from 'date-fns/locale';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Space_Mono } from 'next/font/google';
 import instance from './axiosInstance'
+import KakaoMapModal from "@/components/kakaoMap";
 
 ChartJS.register(...registerables, ChartDataLabels);
 
@@ -128,6 +129,7 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [showDonutModal, setShowDonutModal] = useState(false);
+  const [showKakaoMap, setShowKakaoMap] = useState(false);
 
 
   const table = useReactTable({
@@ -478,11 +480,14 @@ export default function Home() {
             {/* KakaoMap API */}
             <div className="flex flex-row w-full h-fit bg-gray-200 
             mt-5 rounded-xl items-center justify-center p-3 cursor-pointer"
-            onClick={() => {}}>
+            onClick={() => setShowKakaoMap(true)}>
               <span className=" bg-white rounded-xl flex items-center justify-center px-8 py-3">
                 <div className="font-bold">지도 소통정보 조회</div>
               </span>
             </div>
+            {showKakaoMap && (
+              <KakaoMapModal onClose={() => setShowKakaoMap(false)} />
+            )}
           </div>
         <div className="flex flex-col h-full w-full bg-gray-200 p-10 rounded-xl mx-10">
           <div className="flex flex-col bg-white w-full h-fit mb-2 p-4 rounded-xl shadow">
