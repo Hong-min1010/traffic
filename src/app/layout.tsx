@@ -27,19 +27,14 @@ export default function RootLayout({
       <head>
         {/* GoogleFonts */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
-        <script
-        type="text/javascript"
-        src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services,clusterer,drawing`}
-        async
-      ></script>
+        <Script
+          strategy="beforeInteractive"
+          src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=fb0e2ba9c0067160c8753e12408fb8b7&autoload=false`}
+        />
       </head>
       <body
         className="min-h-screen bg-white text-gray-900"
       >
-        <Script
-          strategy="beforeInteractive"
-          src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_APP_KEY&autoload=false`}
-        />
         {children}
       </body>
     </html>

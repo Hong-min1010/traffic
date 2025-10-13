@@ -15,48 +15,42 @@ export default function KakaoMapModal({ onClose }: KakaoMapModalProps) {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-  const initMap = () => {
-      if (!window.kakao || !mapRef.current) return;
+    // 카카오 스크립트가 로드된 후에 실행
+    if (!window.kakao || !mapRef.current) return;
 
-      window.kakao.maps.load(() => {
+    window.kakao.maps.load(() => {
+      const center = new window.kakao.maps.LatLng(37.2726, 127.4342);
+
       const options = {
-          center: new window.kakao.maps.LatLng(37.2726, 127.4342),
-          level: 5,
+        center,
+        level: 5,
       };
+
       const map = new window.kakao.maps.Map(mapRef.current, options);
 
+      // 마커 추가
       new window.kakao.maps.Marker({
-          map,
-          position: new window.kakao.maps.LatLng(37.2726, 127.4342),
+        map,
+        position: center,
       });
-      });
-  };
 
-  // kakao 객체가 로드될 때까지 기다림
-  if (window.kakao && window.kakao.maps) {
-      initMap();
-  } else {
-      const checkInterval = setInterval(() => {
-      if (window.kakao && window.kakao.maps) {
-          clearInterval(checkInterval);
-          initMap();
-      }
-      }, 100);
-      return () => clearInterval(checkInterval);
-  }
+      // ✅ 모달 렌더 후 지도 리사이즈 및 센터 고정
+      setTimeout(() => {
+        window.kakao.maps.event.trigger(map, "resize");
+        map.setCenter(center);
+      }, 200);
+    });
   }, []);
 
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-[70]">
-      <div className="bg-white w-[800px] h-[600px] rounded-2xl relative">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-4 text-gray-600 hover:text-black text-xl font-bold cursor-pointer"
-        >
-          ✕
-        </button>
-        <div ref={mapRef} className="w-full h-full rounded-2xl" />
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+      <div className="bg-white w-[600px] h-[500px] rounded-lg shadow-lg flex flex-col">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-xl font-bold">지도</h2>
+          <button onClick={onClose}>닫기</button>
+        </div>
+        <div ref={mapRef} className="flex-1 min-h-[400px] rounded-b-lg" />
       </div>
     </div>
   );
