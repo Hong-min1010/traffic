@@ -409,7 +409,7 @@ export default function Home() {
                     `px-4 py-2 rounded-xl text-[14px] font-bold transition cursor-pointer
                     ${activeTab === 'traffic'
                       ? "bg-gray-400 text-black shadow-md w-full"
-                      : " text-blue-950"
+                      : " text-gray-950"
                     }`}
                   >시간대별 소통정보</button>
                   {/* 2번 */}
@@ -419,7 +419,7 @@ export default function Home() {
                     `px-4 py-2 rounded-xl text-[14px] font-bold transition cursor-pointer
                     ${activeTab === 'congestion'
                       ? "bg-gray-400 text-black shadow-md w-full"
-                      : " text-blue-950"
+                      : " text-gray-950"
                     }`}
                   >주요구간 혼잡정보</button>
                 </div>
@@ -470,7 +470,7 @@ export default function Home() {
                       cursor-pointer px-4 py-2 rounded-lg font-bold text-center border-2
                       ${selectedTab === hour
                         ? 'bg-gray-400 text-black border-gray-600 shadow-md'
-                        : 'bg-white text-blue-900 border-gray-400 hover:bg-orange-100'
+                        : 'bg-white text-gray-900 border-gray-400 hover:bg-gray-100'
                       }`}>{hour}시간</div>
                 ))}
               </div>
