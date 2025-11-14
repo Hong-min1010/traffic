@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false`}
         />
       </head>
-      <body className="min-h-screen bg-white text-gray-900">
+      <body className="min-h-screen bg-white text-black">
         {children}
       </body>
     </html>

@@ -38,6 +38,8 @@ const labels = Array.from({ length:24 }, (_, i) =>
     city: number // 시내
   }
 
+  // ColumnDef<TrafficInfo>[] -> ColumnDef<T> = react/table 라이브러리 사용법
+  // ColumnDef<T>를 통해 열의 데이터 타입 지정 가능 TrafficInfo 타입의 데이터만 가능
   const columns: ColumnDef<TrafficInfo>[] =  [
     { accessorKey: "time", header: "시간" },
     { accessorKey: "highway", header: "고속도로" },
@@ -69,6 +71,7 @@ const labels = Array.from({ length:24 }, (_, i) =>
     ],
   };
 
+  // Key, Value를 통해 도로 종류 확인 후, 속도에 따른 스타일 적용
   function getSpeedLabel(type: keyof TrafficInfo, value: number) {
     switch (type) {
     case "highway":
@@ -120,7 +123,9 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"traffic" | "congestion">("traffic");
   // datePicker Library 사용
   const [selectedDate, setSelectedDate] = useState(new Date());
+  // datePicker 상태관리
   const [isOpen, setIsOpen] = useState(false);
+  
   const datePickerRef = useRef<HTMLDivElement>(null);
   const [data, setData] = React.useState<TrafficInfo[]>([]);
   const [selectedTab, setselectedTab] = useState<1 | 3 | 6>(1);
@@ -493,11 +498,11 @@ export default function Home() {
           <div className="flex flex-col bg-white w-full h-fit mb-2 p-4 rounded-xl shadow">
             <div className="flex flex-row w-full h-fit gap-10 mb-4">
               <button onClick={() => setShowModal(true)}
-                className="bg-gray-200 text-white font-bold px-4 py-2 rounded-lg w-1/2 hover:bg-gray-600 cursor-pointer">
+                className="bg-gray-400  font-bold px-4 py-2 rounded-lg w-1/2 hover:bg-gray-600 text-white cursor-pointer">
                 통계표 보기
               </button>
               <button onClick={() => setShowDonutModal(true)} 
-                className="bg-gray-200 text-white font-bold px-4 py-2 hover:bg-gray-600 w-1/2 h-fit rounded-lg cursor-pointer">
+                className="bg-gray-400 text-white font-bold px-4 py-2 hover:bg-gray-600 w-1/2 h-fit rounded-lg cursor-pointer">
                 도로별 평균 속도 보기
               </button>
             </div>
